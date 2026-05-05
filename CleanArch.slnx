@@ -1,4 +1,1 @@
-<Solution>
-  <Project Path="Infrastructure/Infrastructure.csproj" />
-  <Project Path="WebApplication1/WebApplication1.csproj" />
-</Solution>
+<Solution />
