@@ -1,0 +1,125 @@
+@host = http://localhost:5018
+@adminEmail = admin@ecommerce.local
+@adminPassword = Admin123!
+@userEmail = alice2@test.com
+@userPassword = Pass1234!
+
+### 1. Login as the seeded admin
+# @name adminLogin
+POST {{host}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### 2. Login as a regular user (register first time, login after)
+# @name userLogin
+POST {{host}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### 2b. ONLY run this if step 2 returned 401 (user doesn't exist yet)
+# @name registerUser
+POST {{host}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}",
+  "role": "User"
+}
+
+### 3. Create a category (admin only)
+# @name createCategory
+POST {{host}}/api/Categories
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+
+{
+  "name": "Electronics",
+  "description": "Phones, laptops, cables"
+}
+
+### 4. Get all categories (public)
+GET {{host}}/api/Categories
+
+### 5. Create a product (admin only)
+# @name createProduct
+POST {{host}}/api/Products
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+
+{
+  "name": "USB-C Cable",
+  "description": "1m braided",
+  "price": 99.00,
+  "stock": 50,
+  "categoryId": {{createCategory.response.body.$.id}}
+}
+
+### 6. Get all products (public)
+GET {{host}}/api/Products
+
+### 7. Get product by id (public)
+GET {{host}}/api/Products/{{createProduct.response.body.$.id}}
+
+### 8. Update product (admin only)
+PUT {{host}}/api/Products/{{createProduct.response.body.$.id}}
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+
+{
+  "id": {{createProduct.response.body.$.id}},
+  "name": "USB-C Cable (updated)",
+  "description": "Now with extra braiding",
+  "price": 119.00,
+  "stock": 100,
+  "categoryId": {{createCategory.response.body.$.id}}
+}
+
+### 9. Try to create a category as a normal user — should be 403
+POST {{host}}/api/Categories
+Content-Type: application/json
+Authorization: Bearer {{userLogin.response.body.$.token}}
+
+{
+  "name": "Should fail",
+  "description": "User is not admin"
+}
+
+### 10. Place an order as the user
+# @name createOrder
+POST {{host}}/api/Orders
+Content-Type: application/json
+Authorization: Bearer {{userLogin.response.body.$.token}}
+
+{
+  "items": [
+    { "productId": {{createProduct.response.body.$.id}}, "quantity": 2 }
+  ]
+}
+
+### 11. Get my orders (as user)
+GET {{host}}/api/Orders/my
+Authorization: Bearer {{userLogin.response.body.$.token}}
+
+### 12. Get the specific order (as user — owner)
+GET {{host}}/api/Orders/{{createOrder.response.body.$.id}}
+Authorization: Bearer {{userLogin.response.body.$.token}}
+
+### 13. Get the specific order (as admin — admin override)
+GET {{host}}/api/Orders/{{createOrder.response.body.$.id}}
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+
+### 14. Delete the product (admin only) will return 500 due to design
+DELETE {{host}}/api/Products/{{createProduct.response.body.$.id}}
+Authorization: Bearer {{adminLogin.response.body.$.token}}
+
+### 15. Verify it's gone — should be 404
+GET {{host}}/api/Products/{{createProduct.response.body.$.id}}
