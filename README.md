@@ -64,7 +64,7 @@ admin@ecommerce.local / Admin123!
 
 ## Testing
 
-The repo includes `ECommerce.API/api-tests.http` — open in Visual Studio or VS Code (REST Client) and run the requests top to bottom. Tokens and IDs chain automatically. Run this from the top.
+The repo includes `ECommerce.API/api-tests.http` — open in Visual Studio or VS Code (REST Client) and run the requests top to bottom. Tokens and IDs chain automatically.
 
 ## Project Layout
 src/
