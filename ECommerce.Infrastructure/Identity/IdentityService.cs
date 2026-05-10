@@ -22,7 +22,7 @@ public class IdentityService : IIdentityService
         {
             UserName = email,
             Email = email,
-            EmailConfirmed = true  // simplification for learning project
+            EmailConfirmed = true  
         };
 
         var result = await _userManager.CreateAsync(user, password);
@@ -32,7 +32,6 @@ public class IdentityService : IIdentityService
                 result.Errors.Select(e => e.Description).ToArray());
         }
 
-        // Make sure the role exists, then assign.
         if (!await _roleManager.RoleExistsAsync(role))
         {
             await _roleManager.CreateAsync(new IdentityRole(role));

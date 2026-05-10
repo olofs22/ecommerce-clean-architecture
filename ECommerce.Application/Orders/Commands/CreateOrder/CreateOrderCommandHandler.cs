@@ -50,7 +50,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                     $"Not enough stock for product '{product.Name}'. Available: {product.Stock}, requested: {requested.Quantity}.");
             }
 
-            // Snapshot the price at purchase time
             var item = new OrderItem
             {
                 ProductId = product.Id,
@@ -61,7 +60,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             order.Items.Add(item);
             total += item.UnitPrice * item.Quantity;
 
-            // Decrement stock
             product.Stock -= requested.Quantity;
             _productRepository.Update(product);
         }
